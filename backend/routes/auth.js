@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const passport = require('../config/passport');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -141,5 +142,34 @@ router.post('/subscription', auth, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+// Google OAuth routes
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false
+  })
+);
+
+router.get('/google/callback',
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: process.env.FRONTEND_URL || 'http://localhost:5173/auth?error=google_auth_failed'
+  }),
+  async (req, res) => {
+    try {
+      // Generate JWT token
+      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
+        expiresIn: '7d'
+      });
+
+      // Redirect to frontend with token
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendURL}/auth?token=${token}&name=${encodeURIComponent(req.user.name)}`);
+    } catch (error) {
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth?error=token_generation_failed`);
+    }
+  }
+);
 
 module.exports = router;
