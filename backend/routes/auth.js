@@ -152,23 +152,34 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', {
-    session: false,
-    failureRedirect: process.env.FRONTEND_URL || 'http://localhost:5173/auth?error=google_auth_failed'
-  }),
-  async (req, res) => {
-    try {
-      // Generate JWT token
-      const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, {
-        expiresIn: '7d'
-      });
+  (req, res, next) => {
+    passport.authenticate('google', {
+      session: false
+    }, (err, user, info) => {
+      if (err) {
+        console.error('Google auth error:', err);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth?error=auth_failed`);
+      }
+      
+      if (!user) {
+        console.error('No user returned from Google');
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth?error=no_user`);
+      }
 
-      // Redirect to frontend with token
-      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendURL}/auth?token=${token}&name=${encodeURIComponent(req.user.name)}`);
-    } catch (error) {
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth?error=token_generation_failed`);
-    }
+      try {
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+          expiresIn: '7d'
+        });
+
+        // Redirect to frontend with token
+        const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendURL}/auth?token=${token}&name=${encodeURIComponent(user.name)}`);
+      } catch (error) {
+        console.error('Token generation error:', error);
+        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth?error=token_failed`);
+      }
+    })(req, res, next);
   }
 );
 
