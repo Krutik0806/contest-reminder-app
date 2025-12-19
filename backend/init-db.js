@@ -23,19 +23,19 @@ const initializeDatabase = async () => {
 
     // Create admin user
     console.log('Creating admin user...');
-    const adminExists = await User.findOne({ email: 'admin@example.com' });
+    const adminExists = await User.findOne({ email: 'chamthakrutik4@gmail.com' });
     
     if (!adminExists) {
       const admin = new User({
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: 'admin123',
+        name: 'Krutik',
+        email: 'chamthakrutik4@gmail.com',
+        password: 'Krutik@123',
         role: 'admin'
       });
       await admin.save();
       console.log('✅ Admin user created!');
-      console.log('   Email: admin@example.com');
-      console.log('   Password: admin123\n');
+      console.log('   Email: chamthakrutik4@gmail.com');
+      console.log('   Password: Krutik@123\n');
     } else {
       console.log('ℹ️  Admin user already exists\n');
     }
