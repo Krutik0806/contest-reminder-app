@@ -16,17 +16,22 @@ const createTransporter = () => {
   }
   
   if (process.env.EMAIL_HOST) {
+    const port = parseInt(process.env.EMAIL_PORT) || 587;
+    console.log(`📧 Creating email transporter: ${process.env.EMAIL_HOST}:${port} (user: ${process.env.EMAIL_USER})`);
+    
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT) || 587,
-      secure: false,
+      port: port,
+      secure: port === 465, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       },
-      connectionTimeout: 10000, // 10 seconds
-      greetingTimeout: 10000,
-      socketTimeout: 10000
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      logger: true, // Enable logging
+      debug: false // Set to true for very verbose logging
     });
   }
   
