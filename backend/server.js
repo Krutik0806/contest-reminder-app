@@ -42,11 +42,33 @@ mongoose.connect(process.env.MONGODB_URI)
     
     // Start the scheduler after database connection
     startScheduler();
+    
+    // Start keep-alive ping to prevent Render from sleeping
+    startKeepAlive();
   })
   .catch((error) => {
     console.error('MongoDB connection error:', error);
     process.exit(1);
   });
+
+// Keep-alive mechanism to prevent Render free tier from sleeping
+const startKeepAlive = () => {
+  const RENDER_URL = process.env.RENDER_URL || 'https://contest-reminder-app.onrender.com';
+  
+  // Self-ping every 3 minutes (180000 ms)
+  setInterval(async () => {
+    try {
+      const response = await fetch(`${RENDER_URL}/api/health`);
+      if (response.ok) {
+        console.log('✅ Keep-alive ping successful at', new Date().toISOString());
+      }
+    } catch (error) {
+      console.error('❌ Keep-alive ping failed:', error.message);
+    }
+  }, 180000); // 3 minutes
+  
+  console.log('🔄 Keep-alive mechanism started (pinging every 3 minutes)');
+};
 
 // Error handling middleware
 app.use((err, req, res, next) => {

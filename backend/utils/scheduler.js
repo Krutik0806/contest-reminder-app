@@ -113,16 +113,18 @@ const sendReminders = async (contest, timeType) => {
 
 // Run every minute
 const startScheduler = () => {
-  console.log('Starting reminder scheduler...');
+  console.log('🚀 Starting reminder scheduler...');
   
   // Run immediately on startup
   checkAndSendReminders();
   
-  // Then run every minute
-  cron.schedule('* * * * *', () => {
-    console.log('Checking for reminders...', new Date().toISOString());
+  // Then run every 5 minutes (reduce frequency to save resources)
+  cron.schedule('*/5 * * * *', () => {
+    console.log('🔍 Checking for reminders...', new Date().toISOString());
     checkAndSendReminders();
   });
+  
+  console.log('✅ Scheduler started successfully');
 };
 
 module.exports = { startScheduler };
