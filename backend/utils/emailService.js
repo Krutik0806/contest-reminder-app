@@ -16,14 +16,17 @@ const createTransporter = () => {
   }
   
   if (process.env.EMAIL_HOST) {
-    return nodemailer.createTransport({
+    return nodemailer.createTransporter({
       host: process.env.EMAIL_HOST,
       port: parseInt(process.env.EMAIL_PORT) || 587,
       secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      }
+      },
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
   }
   

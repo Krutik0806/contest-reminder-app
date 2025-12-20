@@ -90,21 +90,27 @@ const sendReminders = async (contest, timeType) => {
       }
       
       // Send email notification
-      await sendContestReminderEmail(
-        user.email,
-        contest.name,
-        contest.link,
-        timeText
-      );
-      
-      // Mark as sent
-      if (!reminder.sent) {
-        reminder.sent = {};
+      try {
+        await sendContestReminderEmail(
+          user.email,
+          contest.name,
+          contest.link,
+          timeText
+        );
+        console.log(`📧 Email sent to ${user.email} for ${contest.name}`);
+        
+        // Mark as sent only if email succeeds
+        if (!reminder.sent) {
+          reminder.sent = {};
+        }
+        reminder.sent[timeType] = true;
+        reminder.markModified('sent');
+        await reminder.save();
+        console.log(`✅ Marked reminder as sent for ${user.email} - ${timeType}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send email to ${user.email}:`, emailError.message);
+        // Don't mark as sent if email failed - will retry next time
       }
-      reminder.sent[timeType] = true;
-      reminder.markModified('sent');
-      await reminder.save();
-      console.log(`✅ Marked reminder as sent for ${user.email} - ${timeType}`);
     }
   } catch (error) {
     console.error('Error in sendReminders:', error);
