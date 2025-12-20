@@ -50,3 +50,27 @@ export const downloadICS = (contest) => {
   link.click();
   document.body.removeChild(link);
 };
+
+// Generate direct calendar URLs for various calendar services
+export const getCalendarUrls = (contest) => {
+  const start = new Date(contest.startTime);
+  const durationMatch = contest.duration.toString().match(/(\d+)/);
+  const durationMinutes = durationMatch ? parseInt(durationMatch[0]) : 120;
+  const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+
+  const formatGoogleDate = (date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const description = `Platform: ${contest.platform}\nDuration: ${contest.duration}\n\nContest Link: ${contest.link}`;
+  
+  return {
+    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(contest.name)}&dates=${formatGoogleDate(start)}/${formatGoogleDate(end)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}&sf=true&output=xml`,
+    
+    outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}`,
+    
+    office365: `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}`,
+    
+    yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(contest.name)}&st=${formatGoogleDate(start)}&et=${formatGoogleDate(end)}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(contest.platform)}`
+  };
+};
