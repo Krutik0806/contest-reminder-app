@@ -10,6 +10,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
+import VerifyEmail from './pages/VerifyEmail';
 import { registerServiceWorker, requestNotificationPermission } from './services/notifications';
 
 import './App.css';
@@ -32,6 +33,10 @@ function AppRoutes() {
         <Route
           path="/auth"
           element={isAuthenticated ? <Navigate to="/" /> : <Auth />}
+        />
+        <Route
+          path="/verify-email"
+          element={<VerifyEmail />}
         />
         <Route path="/" element={<Dashboard />} />
         <Route

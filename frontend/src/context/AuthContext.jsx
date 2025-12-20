@@ -39,9 +39,22 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
+      const errorData = error.response?.data;
+      
+      // Check if needs verification
+      if (errorData?.needsVerification) {
+        return {
+          success: false,
+          needsVerification: true,
+          userId: errorData.userId,
+          email: errorData.email,
+          error: errorData.error
+        };
+      }
+      
       return {
         success: false,
-        error: error.response?.data?.error || 'Login failed'
+        error: errorData?.error || 'Login failed'
       };
     }
   };
@@ -49,8 +62,18 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await authAPI.register({ name, email, password });
-      const { user, token } = response.data;
       
+      // New registration returns userId and message instead of token
+      if (response.data.userId) {
+        return {
+          success: true,
+          userId: response.data.userId,
+          email: response.data.email
+        };
+      }
+      
+      // Fallback for old response format
+      const { user, token } = response.data;
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);

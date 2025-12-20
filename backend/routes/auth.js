@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 const passport = require('../config/passport');
+const { sendEmail } = require('../utils/emailService');
+const { generateOTP, getOTPExpiry } = require('../utils/otpService');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -16,28 +18,40 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
     
-    // Create user
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpiry = getOTPExpiry();
+    
+    // Create user (not verified yet)
     const user = new User({
       email,
       password,
-      name
+      name,
+      isVerified: false,
+      verificationOTP: otp,
+      otpExpiry: otpExpiry
     });
     
     await user.save();
     
-    // Generate token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    // Send OTP email
+    try {
+      await sendEmail(
+        email,
+        'Verify Your Email - Contest Reminder',
+        `Hello ${name},\n\nYour verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't create an account, please ignore this email.\n\nBest regards,\nContest Reminder Team`
+      );
+    } catch (emailError) {
+      console.error('Failed to send OTP email:', emailError);
+      // Delete user if email fails
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({ error: 'Failed to send verification email' });
+    }
     
     res.status(201).json({
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      },
-      token
+      message: 'Registration successful. Please check your email for verification code.',
+      userId: user._id,
+      email: user.email
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -59,6 +73,16 @@ router.post('/login', async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    
+    // Check if user is verified
+    if (!user.isVerified && !user.googleId) {
+      return res.status(403).json({ 
+        error: 'Please verify your email first',
+        needsVerification: true,
+        userId: user._id,
+        email: user.email
+      });
     }
     
     // Generate token
@@ -95,6 +119,95 @@ router.get('/me', auth, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Verify OTP
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
+    
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if already verified
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Email already verified' });
+    }
+    
+    // Check if OTP is expired
+    if (user.otpExpiry < new Date()) {
+      return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
+    }
+    
+    // Check if OTP matches
+    if (user.verificationOTP !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+    
+    // Verify user
+    user.isVerified = true;
+    user.verificationOTP = null;
+    user.otpExpiry = null;
+    await user.save();
+    
+    // Generate token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '7d'
+    });
+    
+    res.json({
+      message: 'Email verified successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      },
+      token
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Resend OTP
+router.post('/resend-otp', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if already verified
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Email already verified' });
+    }
+    
+    // Generate new OTP
+    const otp = generateOTP();
+    const otpExpiry = getOTPExpiry();
+    
+    user.verificationOTP = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+    
+    // Send OTP email
+    await sendEmail(
+      user.email,
+      'Verify Your Email - Contest Reminder',
+      `Hello ${user.name},\n\nYour new verification code is: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nBest regards,\nContest Reminder Team`
+    );
+    
+    res.json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
