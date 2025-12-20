@@ -127,17 +127,17 @@ const Dashboard = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 mb-6">
+          <div className="flex flex-col gap-4">
             {/* Time Filter */}
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Time Filter
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setFilter('today')}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm ${
                     filter === 'today'
                       ? 'bg-primary text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -157,10 +157,10 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => setFilter('all')}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                  className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition text-sm ${
                     filter === 'all'
                       ? 'bg-primary text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   🏷 All
@@ -176,7 +176,7 @@ const Dashboard = () => {
               <select
                 value={platformFilter}
                 onChange={(e) => setPlatformFilter(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
+                className="w-full px-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-primary focus:border-primary"
               >
                 {platforms.map(platform => (
                   <option key={platform} value={platform}>
@@ -213,24 +213,22 @@ const Dashboard = () => {
               .map(contest => (
               <div
                 key={contest._id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition p-6"
+                className="contest-card bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition p-4 sm:p-6"
               >
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1">
-                    <div className="flex items-start gap-3 mb-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPlatformColor(contest.platform)}`}>
+                    <div className="flex flex-wrap items-start gap-2 mb-2">
+                      <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${getPlatformColor(contest.platform)}`}>
                         {contest.platform}
                       </span>
                       {isToday(new Date(contest.startTime)) && (
-                        <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                        <span className="px-2 sm:px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
                           TODAY
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {contest.name}
-                    </h3>
-                    <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600 dark:text-gray-300">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">{contest.name}</h3>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center gap-1">
                         <span>🗓</span>
                         <span>{format(new Date(contest.startTime), 'MMM dd, yyyy')}</span>
@@ -252,7 +250,7 @@ const Dashboard = () => {
                       href={contest.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition text-center"
+                      className="px-4 sm:px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition text-center text-sm sm:text-base"
                     >
                       Go to Contest →
                     </a>

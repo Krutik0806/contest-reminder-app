@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const response = await authAPI.register({ name, email, password });
+      console.log('Registration response:', response.data);
       
       // New registration returns userId and message instead of token
       if (response.data.userId) {
@@ -72,14 +73,27 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
-      // Fallback for old response format
+      // Fallback for old response format (should not happen with OTP)
+      console.warn('Old registration format detected, user should verify email');
       const { user, token } = response.data;
+      
+      // Don't auto-login if not verified
+      if (user && !user.isVerified) {
+        return {
+          success: true,
+          userId: user._id,
+          email: user.email,
+          needsVerification: true
+        };
+      }
+      
       localStorage.setItem('token', token);
       setToken(token);
       setUser(user);
       
       return { success: true };
     } catch (error) {
+      console.error('Registration error:', error.response?.data);
       return {
         success: false,
         error: error.response?.data?.error || 'Registration failed'

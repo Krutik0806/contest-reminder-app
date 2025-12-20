@@ -16,3 +16,42 @@ body {
 #root {
   min-height: 100vh;
 }
+/* Mobile Responsive Fixes */
+@media (max-width: 640px) {
+  /* Contest Cards */
+  .contest-card {
+    padding: 1rem !important;
+  }
+  
+  /* Buttons */
+  button {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  /* Calendar Dropdown */
+  .calendar-dropdown {
+    right: 0;
+    left: auto;
+    min-width: 200px;
+  }
+  
+  /* Tables */
+  table {
+    font-size: 0.875rem;
+  }
+  
+  td, th {
+    padding: 0.5rem !important;
+  }
+  
+  /* Navbar */
+  nav span {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Input fields */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+}
