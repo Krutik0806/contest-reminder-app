@@ -60,12 +60,12 @@ export const getCalendarUrls = (contest) => {
   const description = `Platform: ${contest.platform}\nDuration: ${contest.duration}\n\nContest Link: ${contest.link}`;
   
   return {
-    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(contest.name)}&dates=${formatGoogleDate(start)}/${formatGoogleDate(end)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}&sf=true&output=xml`,
+    google: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(contest.name)}&dates=${formatGoogleDate(start)}/${formatGoogleDate(end)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}&sf=true&output=xml&remind=15`,
     
-    outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}`,
+    outlook: `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}&reminders=15`,
     
-    office365: `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}`,
+    office365: `https://outlook.office.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(contest.name)}&startdt=${start.toISOString()}&enddt=${end.toISOString()}&body=${encodeURIComponent(description)}&location=${encodeURIComponent(contest.platform)}&reminders=15`,
     
-    yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(contest.name)}&st=${formatGoogleDate(start)}&et=${formatGoogleDate(end)}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(contest.platform)}`
+    yahoo: `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${encodeURIComponent(contest.name)}&st=${formatGoogleDate(start)}&et=${formatGoogleDate(end)}&desc=${encodeURIComponent(description)}&in_loc=${encodeURIComponent(contest.platform)}&rem=15`
   };
 };
