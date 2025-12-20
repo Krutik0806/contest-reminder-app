@@ -39,18 +39,6 @@ const userSchema = new mongoose.Schema({
   pushSubscription: {
     type: Object,
     default: null
-  },
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  verificationOTP: {
-    type: String,
-    default: null
-  },
-  otpExpiry: {
-    type: Date,
-    default: null
   }
 }, {
   timestamps: true

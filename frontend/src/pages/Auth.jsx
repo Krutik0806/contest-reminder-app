@@ -48,32 +48,8 @@ const Auth = () => {
       let result;
       if (isLogin) {
         result = await login(formData.email, formData.password);
-        
-        // Check if needs verification
-        if (result.needsVerification) {
-          toast.warning('Please verify your email first');
-          navigate('/verify-email', {
-            state: {
-              userId: result.userId,
-              email: result.email
-            }
-          });
-          return;
-        }
       } else {
         result = await register(formData.name, formData.email, formData.password);
-        
-        // On successful registration, redirect to verification
-        if (result.success && result.userId) {
-          toast.success('Registration successful! Please check your email for verification code.');
-          navigate('/verify-email', {
-            state: {
-              userId: result.userId,
-              email: result.email
-            }
-          });
-          return;
-        }
       }
 
       if (result.success) {
