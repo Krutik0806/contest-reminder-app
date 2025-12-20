@@ -16,6 +16,28 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .xs\:hidden {
+    display: none;
+  }
+  
+  .xs\:inline {
+    display: inline;
+  }
+}
+
+@media (min-width: 481px) {
+  .xs\:hidden {
+    display: inline;
+  }
+  
+  .xs\:inline {
+    display: none;
+  }
+}
+
 /* Mobile Responsive Fixes */
 @media (max-width: 640px) {
   /* Contest Cards */
