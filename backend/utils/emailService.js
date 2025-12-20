@@ -41,6 +41,74 @@ const createTransporter = () => {
 
 const sendContestReminderEmail = async (userEmail, contestName, contestLink, timeUntil) => {
   try {
+    // If Brevo API key is available, use API (more reliable than SMTP)
+    if (process.env.BREVO_API_KEY) {
+      console.log(`📧 Sending email via Brevo API to ${userEmail}`);
+      
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: {
+            name: 'Contest Reminder',
+            email: process.env.EMAIL_FROM?.match(/<(.+)>/)?.[1] || 'contestreminder0806@gmail.com'
+          },
+          to: [{ email: userEmail }],
+          subject: `🚨 Contest Reminder: ${contestName} starts in ${timeUntil}!`,
+          htmlContent: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+                .button { display: inline-block; background: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🚨 Contest Starting Soon!</h1>
+                </div>
+                <div class="content">
+                  <h2>${contestName}</h2>
+                  <p style="font-size: 18px; color: #EF4444;">
+                    <strong>Starts in ${timeUntil}!</strong>
+                  </p>
+                  <p>Don't miss this contest! Click the button below to go to the contest page:</p>
+                  <a href="${contestLink}" class="button" style="color: white;">Go to Contest →</a>
+                  <p style="margin-top: 30px; color: #666;">
+                    Good luck and happy coding! 🚀
+                  </p>
+                </div>
+                <div class="footer">
+                  <p>You're receiving this because you set a reminder for this contest.</p>
+                  <p>Contest Reminder App | Never miss a coding contest</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `
+        })
+      });
+
+      if (response.ok) {
+        console.log(`✅ Email sent successfully via Brevo API to ${userEmail}`);
+        return true;
+      } else {
+        const error = await response.text();
+        throw new Error(`Brevo API error: ${response.status} - ${error}`);
+      }
+    }
+    
+    // Fallback to SMTP if API key not available
     const transporter = createTransporter();
     
     if (!transporter) {
