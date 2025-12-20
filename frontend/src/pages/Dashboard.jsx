@@ -23,7 +23,7 @@ const Dashboard = () => {
     if (user) {
       loadReminders();
     }
-  }, [filter, platformFilter]);
+  }, [filter, platformFilter, user]);
 
   const loadContests = async () => {
     try {
@@ -43,9 +43,10 @@ const Dashboard = () => {
   const loadReminders = async () => {
     try {
       const response = await remindersAPI.getAll();
-      setReminders(response.data);
+      setReminders(response.data || []);
     } catch (error) {
       console.error('Failed to load reminders:', error);
+      setReminders([]); // Set empty array on error to prevent crashes
     }
   };
 
@@ -63,7 +64,14 @@ const Dashboard = () => {
   };
 
   const hasReminder = (contestId) => {
-    return reminders.some(r => r.contestId._id === contestId);
+    if (!Array.isArray(reminders)) return false;
+    
+    return reminders.some(r => {
+      if (!r || !r.contestId) return false;
+      // Handle both populated and non-populated contestId
+      const rContestId = typeof r.contestId === 'object' ? r.contestId._id : r.contestId;
+      return rContestId === contestId;
+    });
   };
 
   const getPlatformColor = (platform) => {

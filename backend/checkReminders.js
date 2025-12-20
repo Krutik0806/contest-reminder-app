@@ -10,7 +10,9 @@ const checkReminders = async () => {
     console.log('Connected to MongoDB');
 
     // Find the test contest
-    const testContest = await Contest.findOne({ name: 'Test Contest - Notification Check' });
+    const testContest = await Contest.findOne({ 
+      name: { $regex: /Test|Immediate/i } 
+    }).sort({ createdAt: -1 });
     if (!testContest) {
       console.log('❌ Test contest not found!');
       mongoose.connection.close();
